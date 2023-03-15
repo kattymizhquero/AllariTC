@@ -1,0 +1,112 @@
+﻿@model EmployeeViewModel
+
+<h3>Enter new Employee:</h3>
+<form id="AjaxForm">
+    <div class="row">
+        
+        <div class="col-md-12">
+            <div class="form-group">
+                <input asp-for="Employee.Name" id="Name" class="form-control input-sm" placeholder="Name" />
+                <span asp-validation-for="Employee.Name" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="form-group">
+                <input asp-for="Employee.Email" id="Email" class="form-control input-sm" placeholder="Email" />
+                <span asp-validation-for="Employee.Email" class="text-danger"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-9">
+            <div id="ErrorAlert" class="alert alert-danger" style="display:none" role="alert">
+                Error in data sent!
+            </div>
+            <div id="OkAlert" class="alert alert-success" style="display:none" role="alert">
+                Data received successfully!
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group float-center">
+                <img id="AjaxLoader" alt="Sending ..." style="display:none" src="~../Images/loading.gif" />
+                &nbsp;&nbsp;
+                <button id="SubmitBtn" type="submit" class="btn btn-primary">
+                    Send Data
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<h3>List of Employees</h3>
+<div id="EmployeeList">
+    <partial name="_EmployeeListPartial" model="@Model.EmployeeList" />
+</div>
+
+@section scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#AjaxForm").submit(function (e) {
+                e.preventDefault();
+
+                // Show Ajax Loader
+                $("#AjaxLoader").show("fast");
+                $("#SubmitBtn").prop("disabled", true);
+
+                $.ajax({
+                    url: "@Url.Action("Employee", "Payroll")", // Url
+                    data: {
+                            // Data / Parameters
+                            Name: $("#Name").val(),
+                            Email: $("#Email").val(),
+                     
+                    },
+                    type: "post"  //  HTTP Verb
+                })
+                // ok:
+                .done(function (result) {                    
+                    if (result != null) {
+
+                        $("#EmployeeList").html(result);
+
+            
+                        $("#EmployeeList .row").first().hide();
+                        $("#EmployeeList .row").first().slideToggle("fast");
+                 
+                        $("#Name").val("");
+                        $("#Email").val("");
+                      
+                        $("#AjaxLoader").hide("slow");
+
+                        $("#SubmitBtn").prop("disabled", false);
+
+     
+                        $("#OkAlert").show("slow").delay(2000).hide("slow");
+                    }
+                })
+
+                .fail(function (xhr, status, error) {                    
+
+                    $("#ErrorAlert").show("slow").delay(2000).hide("slow");
+
+                    $("#AjaxLoader").hide("slow");
+
+
+                    $("#SubmitBtn").prop("disabled", false);
+                })
+
+                .always(function () {
+                    
+                });
+            });
+        });
+    </script>
+
+} 
